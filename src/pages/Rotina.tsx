@@ -21,16 +21,20 @@ export default function Rotina() {
   });
 
   const toggleHabit = (id: string) => {
+    toggleHabitDate(id, today);
+  };
+
+  const toggleHabitDate = (id: string, date: string) => {
     const updated = {
       ...data,
       habits: data.habits.map(h => {
         if (h.id !== id) return h;
-        const done = h.completedDates.includes(today);
+        const done = h.completedDates.includes(date);
         return {
           ...h,
           completedDates: done
-            ? h.completedDates.filter(d => d !== today)
-            : [...h.completedDates, today],
+            ? h.completedDates.filter(d => d !== date)
+            : [...h.completedDates, date],
         };
       }),
     };
@@ -111,6 +115,20 @@ export default function Rotina() {
     if (totalHabitsInCategory === 0) return 0;
     return (1 / totalHabitsInCategory) * 0.5;
   };
+
+  // Get dates for current week (Sunday to Saturday)
+  const getWeekDates = () => {
+    const now = new Date(today);
+    const dayOfWeek = now.getDay();
+    const weekDates: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - dayOfWeek + i);
+      weekDates.push(date.toISOString().slice(0, 10));
+    }
+    return weekDates;
+  };
+  const weekDates = getWeekDates();
 
   const completedToday = data.habits.filter(h => h.completedDates.includes(today)).length;
   const total = data.habits.length;
@@ -285,18 +303,29 @@ export default function Rotina() {
               <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/50">
                 <div className="flex gap-1">
                   {WEEKDAY_LABELS.map((day, i) => {
-                    const isActive = habit.weekdays?.includes(i);
+                    const isScheduled = habit.weekdays?.includes(i);
+                    const dateForDay = weekDates[i];
+                    const isCompletedOnDay = habit.completedDates.includes(dateForDay);
+                    const isToday = dateForDay === today;
+                    const isPast = dateForDay < today;
+                    
                     return (
-                      <div
+                      <button
                         key={i}
-                        className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold ${
-                          isActive
-                            ? 'bg-primary/20 text-primary'
-                            : 'bg-muted/50 text-muted-foreground/50'
+                        onClick={() => toggleHabitDate(habit.id, dateForDay)}
+                        className={`w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold relative transition-all active:scale-90 ${
+                          isCompletedOnDay
+                            ? 'bg-primary text-primary-foreground'
+                            : isScheduled && isPast && !isCompletedOnDay
+                            ? 'bg-destructive/20 text-destructive hover:bg-destructive/30'
+                            : isScheduled
+                            ? isToday ? 'bg-primary/30 text-primary ring-1 ring-primary hover:bg-primary/40' : 'bg-primary/20 text-primary hover:bg-primary/30'
+                            : 'bg-muted/50 text-muted-foreground/50 hover:bg-muted'
                         }`}
+                        title={`${dateForDay}${isCompletedOnDay ? ' - Concluído' : ''}`}
                       >
-                        {day}
-                      </div>
+                        {isCompletedOnDay ? <Check size={12} /> : day}
+                      </button>
                     );
                   })}
                 </div>

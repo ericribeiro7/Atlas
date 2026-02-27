@@ -18,6 +18,7 @@ export default function Financas() {
   const [newTx, setNewTx] = useState<Partial<Transaction>>({ type: 'expense', category: 'Comida' });
   const [newExpense, setNewExpense] = useState({ name: '', amount: '', category: 'Aluguel', dueDay: '10' });
   const [savingsAmount, setSavingsAmount] = useState('');
+  const [expenseDialogOpen, setExpenseDialogOpen] = useState(false);
 
   const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
 
@@ -87,6 +88,7 @@ export default function Financas() {
     const updated = { ...data, recurringExpenses: [...recurringExpenses, expense] };
     setData(updated);
     saveData(updated);
+    setExpenseDialogOpen(false);
     setNewExpense({ name: '', amount: '', category: 'Aluguel', dueDay: '10' });
   };
 
@@ -140,11 +142,59 @@ export default function Financas() {
   if (viewMode === 'expenses') {
     return (
       <div className="px-4 pt-6 pb-24 safe-bottom max-w-md mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => setViewMode('main')} className="p-2 -ml-2 text-muted-foreground hover:text-foreground">
-            <ArrowLeft size={20} />
-          </button>
-          <h1 className="text-2xl font-black tracking-tight">GASTOS FIXOS</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setViewMode('main')} className="p-2 -ml-2 text-muted-foreground hover:text-foreground">
+              <ArrowLeft size={20} />
+            </button>
+            <h1 className="text-2xl font-black tracking-tight">GASTOS FIXOS</h1>
+          </div>
+          <Dialog open={expenseDialogOpen} onOpenChange={setExpenseDialogOpen}>
+            <DialogTrigger asChild>
+              <button className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-accent text-accent text-sm font-semibold hover:bg-accent/10 transition-colors">
+                <Plus size={16} /> Novo
+              </button>
+            </DialogTrigger>
+            <DialogContent className="bg-popover border-border max-w-sm">
+              <DialogHeader>
+                <DialogTitle>Novo Gasto Fixo</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-3 pt-2">
+                <Input
+                  placeholder="Nome (ex: Aluguel, Internet)"
+                  className="bg-secondary border-border"
+                  value={newExpense.name}
+                  onChange={e => setNewExpense({ ...newExpense, name: e.target.value })}
+                />
+                <Input
+                  type="number"
+                  placeholder="Valor"
+                  className="bg-secondary border-border"
+                  value={newExpense.amount}
+                  onChange={e => setNewExpense({ ...newExpense, amount: e.target.value })}
+                />
+                <select
+                  className="w-full py-2 px-3 rounded-lg bg-secondary text-foreground border border-border text-sm"
+                  value={newExpense.category}
+                  onChange={e => setNewExpense({ ...newExpense, category: e.target.value })}
+                >
+                  {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <Input
+                  type="number"
+                  placeholder="Dia de vencimento (1-31)"
+                  className="bg-secondary border-border"
+                  min={1}
+                  max={31}
+                  value={newExpense.dueDay}
+                  onChange={e => setNewExpense({ ...newExpense, dueDay: e.target.value })}
+                />
+                <Button onClick={addRecurringExpense} className="w-full bg-primary text-primary-foreground font-semibold">
+                  Adicionar
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Summary */}
@@ -238,48 +288,9 @@ export default function Financas() {
             <div className="text-center py-8 text-muted-foreground">
               <TrendingDown size={48} className="mx-auto mb-3 opacity-30" />
               <p className="text-sm">Nenhum gasto fixo cadastrado</p>
-              <p className="text-xs mt-1">Adicione seus gastos mensais abaixo</p>
+              <p className="text-xs mt-1">Clique em "Novo" para adicionar</p>
             </div>
           )}
-        </div>
-
-        {/* Add New Expense Form */}
-        <div className="bg-secondary rounded-2xl p-5 animate-fade-in">
-          <h3 className="font-black text-sm tracking-wide uppercase mb-4">Novo Gasto Fixo</h3>
-          <div className="space-y-3">
-            <Input
-              placeholder="Nome (ex: Aluguel, Internet)"
-              className="bg-muted border-none"
-              value={newExpense.name}
-              onChange={e => setNewExpense({ ...newExpense, name: e.target.value })}
-            />
-            <Input
-              type="number"
-              placeholder="Valor"
-              className="bg-muted border-none"
-              value={newExpense.amount}
-              onChange={e => setNewExpense({ ...newExpense, amount: e.target.value })}
-            />
-            <select
-              className="w-full py-2 px-3 rounded-lg bg-muted text-foreground border-none text-sm"
-              value={newExpense.category}
-              onChange={e => setNewExpense({ ...newExpense, category: e.target.value })}
-            >
-              {EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-            <Input
-              type="number"
-              placeholder="Dia de vencimento (1-31)"
-              className="bg-muted border-none"
-              min={1}
-              max={31}
-              value={newExpense.dueDay}
-              onChange={e => setNewExpense({ ...newExpense, dueDay: e.target.value })}
-            />
-            <Button onClick={addRecurringExpense} className="w-full bg-primary text-primary-foreground font-semibold">
-              <Plus size={16} className="mr-2" /> Adicionar Gasto
-            </Button>
-          </div>
         </div>
       </div>
     );
