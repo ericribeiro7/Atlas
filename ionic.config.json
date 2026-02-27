@@ -1,5 +1,8 @@
 {
   "name": "Atlas",
-  "integrations": {},
-  "type": "custom"
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "custom",
+  "id": "494d2a87"
 }
