@@ -9,6 +9,15 @@ export interface Transaction {
   date: string;
 }
 
+export interface RecurringExpense {
+  id: string;
+  name: string;
+  amount: number;
+  category: string;
+  dueDay: number; // day of month (1-31)
+  paidMonths: string[]; // ['2026-02', '2026-03'] format
+}
+
 export interface Habit {
   id: string;
   name: string;
@@ -16,52 +25,65 @@ export interface Habit {
   category: string;
   goalId?: string;
   completedDates: string[];
+  startDate?: string;
+  durationMonths?: number;
+  durationDays?: number;
+  targetDate?: string;
+  weekdays?: number[]; // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb
+  notificationTime?: string; // HH:mm format
+}
+
+export interface AppProfile {
+  userName: string;
 }
 
 export interface Goal {
   id: string;
   title: string;
+  description?: string;
+  imageUrl?: string;
   category: 'estudos' | 'saude' | 'financas' | 'pessoal';
   progress: number;
   target: number;
   deadline: string;
   linkedHabitIds: string[];
+  monthlyContribution?: number;
+  isMain?: boolean;
+  isNonFinancial?: boolean;
+  isCompleted?: boolean;
+}
+
+export interface MonthlySaving {
+  month: string; // '2026-02' format
+  amount: number;
 }
 
 export interface AppData {
   transactions: Transaction[];
   habits: Habit[];
   goals: Goal[];
+  recurringExpenses: RecurringExpense[];
+  monthlySavings: MonthlySaving[];
   monthlyBudget: number;
   initialReserve: number;
   currency: string;
+  userName: string;
+  notificationsEnabled: boolean;
 }
 
 const STORAGE_KEY = 'lifeapp-data';
 
 const defaultData: AppData = {
-  transactions: [
-    { id: '1', type: 'income', amount: 100000, category: 'Salário', description: 'Salário mensal', date: '2026-01-05' },
-    { id: '2', type: 'expense', amount: 350, category: 'Comida', description: 'Supermercado', date: '2026-01-10' },
-    { id: '3', type: 'expense', amount: 200, category: 'Lazer', description: 'Cinema', date: '2026-01-12' },
-    { id: '4', type: 'expense', amount: 169.43, category: 'Saúde', description: 'Farmácia', date: '2026-01-15' },
-    { id: '5', type: 'expense', amount: 100, category: 'Aluguel', description: 'Aluguel', date: '2026-01-01' },
-  ],
-  habits: [
-    { id: '1', name: '45 min de Inglês', icon: '📚', category: 'estudos', goalId: 'g1', completedDates: ['2026-01-20', '2026-01-21'] },
-    { id: '2', name: 'Exercício 30 min', icon: '🏃', category: 'saude', completedDates: ['2026-01-20'] },
-    { id: '3', name: 'Leitura 20 páginas', icon: '📖', category: 'estudos', completedDates: [] },
-    { id: '4', name: 'Meditação 10 min', icon: '🧘', category: 'pessoal', completedDates: ['2026-01-20', '2026-01-21', '2026-01-22'] },
-  ],
-  goals: [
-    { id: 'g1', title: 'Aulas de Inglês', category: 'estudos', progress: 15, target: 60, deadline: '2026-06-30', linkedHabitIds: ['1'] },
-    { id: 'g2', title: 'Perder 5kg', category: 'saude', progress: 2, target: 5, deadline: '2026-04-30', linkedHabitIds: [] },
-    { id: 'g3', title: 'Reserva de Emergência', category: 'financas', progress: 38338, target: 50000, deadline: '2026-12-31', linkedHabitIds: [] },
-    { id: 'g4', title: 'Ler 12 livros', category: 'estudos', progress: 3, target: 12, deadline: '2026-12-31', linkedHabitIds: [] },
-  ],
-  monthlyBudget: 5000,
-  initialReserve: 38338,
+  transactions: [],
+  habits: [],
+  goals: [],
+  recurringExpenses: [],
+  monthlySavings: [],
+  monthlyBudget: 0,
+  initialReserve: 0,
   currency: 'R$',
+  userName: '',
+  notificationsEnabled: true,
 };
 
 export function loadData(): AppData {
